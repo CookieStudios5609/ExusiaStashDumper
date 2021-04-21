@@ -5,7 +5,7 @@ import random
 from glob import glob
 
 
-class meme(commands.Cog):
+class Meme(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.pics = []
@@ -40,4 +40,4 @@ class meme(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(meme(bot))
+    bot.add_cog(Meme(bot))
