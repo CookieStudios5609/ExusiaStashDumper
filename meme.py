@@ -7,7 +7,6 @@ import os
 import dotenv
 
 
-
 class Meme(commands.Cog):
     def __init__(self, bot):
         dotenv.load_dotenv()
@@ -16,9 +15,16 @@ class Meme(commands.Cog):
         self.delay = os.getenv("DEFAULT_DELAY")
         self.auto_channel = os.getenv("DEFAULT_CHANNEL")
         self.enabled = True
-        path = os.getenv("IMAGE_PATH") + "/**/*.jpg"
-        for filename in glob(path, recursive=True):
-            self.pics.append(filename)
+# grab files from paths using allowed extensions key
+        main_path = os.getenv("IMAGE_PATH")
+        file_types_raw = os.getenv("FILE_EXTS")
+        extensions = file_types_raw.split(',')
+        for i, j in enumerate(extensions):
+            out = main_path + "/**/*" + extensions[i]
+            filename = glob(out, recursive=True)
+            self.pics.extend(filename)
+            print(self.pics)
+
 
     @commands.command(name='meme')
     async def manual_pic(self, ctx, chan: int, *, time: int):
@@ -80,7 +86,6 @@ class Meme(commands.Cog):
         if bool(self.enabled):
             post_channel = self.bot.get_channel(int(self.auto_channel))
             await post_channel.send(f"An image!", file=discord.File(random.choice(list(self.pics))))
-            print("Sent a photo!")
             await asyncio.sleep(float(self.delay))
         else:
             print("Automeme is disabled.")
