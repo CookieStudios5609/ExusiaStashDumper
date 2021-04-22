@@ -6,7 +6,7 @@ import dotenv
 
 dotenv.load_dotenv()
 intents = discord.Intents.default()
-prefix = "#"
+prefix = os.getenv("PREFIX")
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 bot.load_extension('meme')
 
