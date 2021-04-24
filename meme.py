@@ -5,6 +5,7 @@ import random
 from glob import glob
 import os
 import dotenv
+import sys
 
 
 class Meme(commands.Cog):
@@ -23,11 +24,20 @@ class Meme(commands.Cog):
             out = main_path + "/**/*" + extensions[i]
             filename = glob(out, recursive=True)
             self.pics.extend(filename)
-            print(self.pics)
 
+    @commands.command(name='meme', help="Posts an image or video in the default channel")
+    async def meme(self, ctx):
+        await ctx.trigger_typing()
+        channel = self.bot.get_channel(int(self.auto_channel))
+        await channel.send(f"A meme, from {ctx.author.display_name}!", file=discord.File(random.choice(list(self.pics))))
 
-    @commands.command(name='meme')
-    async def manual_pic(self, ctx, chan: int, *, time: int):
+    @commands.command(name='memehere', help="Posts an image or video in THIS channel")
+    async def meme_here(self, ctx):
+        await ctx.trigger_typing()
+        await ctx.send(f"A meme, from {ctx.author.display_name}!", file=discord.File(random.choice(list(self.pics))))
+
+    @commands.command(name='memethere', help="Posts an image or video in the channel you provide")
+    async def manual(self, ctx, chan: int, *, time: int):
         await ctx.trigger_typing()
         channel = self.bot.get_channel(chan)
         if time == 1:
@@ -39,7 +49,16 @@ class Meme(commands.Cog):
         await asyncio.sleep(time)
         await channel.send(f"A meme, from {ctx.author.display_name}!", file=discord.File(random.choice(list(self.pics))))
 
-    @manual_pic.error
+    @commands.command(name='about', hidden=True)
+    async def info(self, ctx):
+        await ctx.trigger_typing()
+        e = discord.Embed(title="StashDumper", description="An open-source media uploading bot for Exusia.")
+        e.add_field(name="Status:", value=f"Python Version: **{sys.version}**\n Discord.py version: **{discord.__version__}**\n Running on **{sys.platform}**\nPing: **{round(self.bot.latency * 1000, 2)}**", inline=False)
+        e.add_field(name="Need help?", value=f"Use {os.getenv('PREFIX')}help")
+        e.add_field(name="Check out my source code!", value="https://github.com/CookieStudios5609/ExusiaStashDumper", inline=False)
+        await ctx.send(embed=e)
+
+    @manual.error
     async def manual_pic_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             embed = discord.Embed(title="Oops!", description="This command requires a channel id and a time (in seconds) to delay. Please try again.")
@@ -62,7 +81,7 @@ class Meme(commands.Cog):
             self.auto_memer.start()
             await ctx.send("Autoposting has been enabled.")
 
-    @commands.command(name="channel", help="Sets the channel for automatic posts. Please use the id, and not the channel name")
+    @commands.command(name="channel", help="Sets the channel id for automatic posts.")
     async def channel(self, ctx, *, channel: int):
         self.auto_channel = int(channel)
         await ctx.send(f"The channel to automatically post images to has been set to #{self.bot.get_channel(channel)}")
@@ -89,7 +108,6 @@ class Meme(commands.Cog):
             await asyncio.sleep(float(self.delay))
         else:
             print("Automeme is disabled.")
-
 
 
 def setup(bot):
